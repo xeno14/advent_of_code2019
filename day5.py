@@ -14,7 +14,7 @@ def get_pos(code, pos, n, data):
     return res
 
 
-def next_step(pos, data, inputs: deque, outputs: list):
+def next_step(pos, data, inputs):
     leader = data[pos]
     pos += 1
 
@@ -22,71 +22,79 @@ def next_step(pos, data, inputs: deque, outputs: list):
     poscode = leader//100
 
     if opcode == 99:
-        return -1, data
+        return -1, data, None
     if opcode == 1:
         p1, p2, p3 = get_pos(poscode, pos, 3, data)
         pos += 3
         data[p3] = data[p1] + data[p2]
-        return pos, data
+        return pos, data, None
     if opcode == 2:
         p1, p2, p3 = get_pos(poscode, pos, 3, data)
         pos += 3
         data[p3] = data[p1] * data[p2]
-        return pos, data
+        return pos, data, None
     if opcode == 3:  # input
         p1 = data[pos]
         pos += 1
-        data[p1] = inputs.popleft()
-        return pos, data
+        try:
+            data[p1] = next(inputs)
+        except StopIteration:
+            return pos-1, data, None  # skip
+        return pos, data, None
     if opcode == 4:
         p1 = data[pos]
         pos += 1
-        outputs.append(data[p1])
-        return pos, data
+        return pos, data, data[p1]
     if opcode == 5:  # jump-if-true
         p1, p2 = get_pos(poscode, pos, 2, data)
         pos += 2
         if data[p1] != 0:
             pos = data[p2]
-        return pos, data
+        return pos, data, None
     if opcode == 6:  # jump-if-false
         p1, p2 = get_pos(poscode, pos, 2, data)
         pos += 2
         if data[p1] == 0:
             pos = data[p2]
-        return pos, data
+        return pos, data, None
     if opcode == 7:  # less than
         p1, p2, p3 = get_pos(poscode, pos, 3, data)
         pos += 3
         data[p3] = int(data[p1] < data[p2])
-        return pos, data
+        return pos, data, None
     if opcode == 8:  # equal to
         p1, p2, p3 = get_pos(poscode, pos, 3, data)
         pos += 3
         data[p3] = int(data[p1] == data[p2])
-        return pos, data
+        return pos, data, None
     else:
         raise RuntimeError("unknown opcode %d" % opcode)
+
+
+def visualize(pos, data):
+    print("%4d:\t" % pos, end="")
+    for i in range(len(data)):
+        if i == pos:
+            print("[", end="")
+        print(data[i], end="")
+        if i == pos:
+            print("]", end="")
+        print(" ", end="")
+    print()
 
 
 def interpret(data, inputs=None, verbose=False):
     if inputs is None:
         inputs = []
-    inputs = deque(inputs)
+    inputs = iter(inputs)
     outputs = []
     pos = 0
     while pos != -1:
         if verbose:
-            print("%4d:\t" % pos, end="")
-            for i in range(len(data)):
-                if i == pos:
-                    print("[", end="")
-                print(data[i], end="")
-                if i == pos:
-                    print("]", end="")
-                print(" ", end="")
-            print()
-        pos, data = next_step(pos, data, inputs, outputs)
+            visualize(pos, data)
+        pos, data, o = next_step(pos, data, inputs)
+        if o is not None:
+            outputs.append(o)
     return data, outputs
 
 
