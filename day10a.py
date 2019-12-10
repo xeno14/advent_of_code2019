@@ -28,7 +28,7 @@ def count(pos: np.array, asteroids: List[np.array]):
     return cnt
 
 
-def solve(asteroids: List[np.array]) -> int:
+def solve(asteroids: List[np.array]) -> (int, Tuple[int, int]):
     ans = 0
     loc = np.array([-1, -1])
     for a in asteroids:
