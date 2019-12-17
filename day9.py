@@ -89,7 +89,7 @@ def visualize(pos, rb, data):
     print()
 
 
-def build_unbound_data(data):
+def build_unbound_data(data) -> defaultdict:
     res = defaultdict(int)
     for i, x in enumerate(data):
         res[i] = x
