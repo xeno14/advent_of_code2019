@@ -12,12 +12,13 @@ def solve(v: np.array, repeat=100):
     v = v[dim//2+1:]
     dim = v.shape[0]
     head -= dim
+    # the back half of matrix is upper triangular matrix filled with 1
+    # which is equivalent to cumsum
+    v = v[head-dim-2:]
     for step in range(repeat):
-        # the back half of matrix is upper triangular matrix filled with 1
-        # which is equivalent to cumsum
         cumsum = np.cumsum(v[::-1])[::-1]
         v = np.abs(cumsum) % 10
-    return "".join(map(str, v[head-2:head+6]))
+    return "".join(map(str, v[:8]))
 
 
 assert solve(parse("03036732577212944063491565474664")) == "84462026"
